@@ -1,35 +1,35 @@
 // 全局变量，用于临时存储选中头像的 Base64 数据
 let currentAvatarBase64 = "";
 
-// 页面加载完成后，如果是通讯录主页，则渲染列表
-document.addEventListener('DOMContentLoaded', () => {
-  const listContainer = document.getElementById('contact-list-container');
-  if (listContainer) {
-    renderContacts();
-  }
-});
+// ================= SPA 专属：图层路由 =================
 
-// 1. 头像预览与 Base64 转换 (FileReader API)
+// 打开联系人主页
+function openContactsPage() {
+  renderContacts(); // 呼出前先刷新一下列表，确保数据最新
+  openPage('page-contacts-list');
+}
+
+// ================= 核心功能逻辑 =================
+
+// 1. 头像预览与 Base64 转换
 function previewAvatar(event) {
   const file = event.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
   reader.onload = function(e) {
-    const base64String = e.target.result;
-    currentAvatarBase64 = base64String; // 存入内存准备保存
+    currentAvatarBase64 = e.target.result;
     
     // 更新 UI 预览
     const previewImg = document.getElementById('avatar-preview');
-    previewImg.src = base64String;
+    previewImg.src = currentAvatarBase64;
     previewImg.style.display = 'block';
   };
   
-  // 读取文件并转换为 Data URL (Base64)
   reader.readAsDataURL(file);
 }
 
-// 2. 保存联系人到 localStorage
+// 2. 保存联系人到本地
 function saveContact() {
   const name = document.getElementById('contact-name').value.trim();
   const prompt = document.getElementById('contact-prompt').value.trim();
@@ -39,23 +39,28 @@ function saveContact() {
     return;
   }
 
-  // 构建单个联系人对象
   const newContact = {
-    id: 'contact_' + Date.now(), // 用时间戳生成唯一 ID
+    id: 'contact_' + Date.now(),
     name: name,
-    avatar: currentAvatarBase64, // 如果没选头像，就是空字符串
+    avatar: currentAvatarBase64,
     prompt: prompt
   };
 
-  // 获取已有数据，没有则初始化为空数组
   let contacts = JSON.parse(localStorage.getItem('nekobako_contacts')) || [];
-  contacts.unshift(newContact); // 把新联系人插到最前面
+  contacts.unshift(newContact); // 把新角色插到最前面
 
-  // 存回手机本地
   localStorage.setItem('nekobako_contacts', JSON.stringify(contacts));
   
-  // 保存成功后，自动跳转回联系人列表页
-  window.location.href = 'contacts.html';
+  // SPA 魔法：保存成功后，不刷新网页，直接关闭添加图层，并重新渲染底层列表
+  closePage('page-add-contact');
+  renderContacts();
+
+  // 贴心细节：清空刚才填写的表单，为下次添加做准备
+  document.getElementById('contact-name').value = '';
+  document.getElementById('contact-prompt').value = '';
+  document.getElementById('avatar-preview').style.display = 'none';
+  document.getElementById('avatar-preview').src = '';
+  currentAvatarBase64 = '';
 }
 
 // 3. 渲染联系人列表
@@ -74,13 +79,9 @@ function renderContacts() {
     const item = document.createElement('div');
     item.className = 'contact-item';
     
-    // 处理头像：有图显示图，没图显示首字母
-    let avatarHTML = '';
-    if (contact.avatar) {
-      avatarHTML = `<img src="${contact.avatar}" alt="avatar">`;
-    } else {
-      avatarHTML = contact.name.charAt(0).toUpperCase(); // 取名字第一个字
-    }
+    let avatarHTML = contact.avatar 
+      ? `<img src="${contact.avatar}" alt="avatar">` 
+      : contact.name.charAt(0).toUpperCase();
 
     item.innerHTML = `
       <div class="avatar-circle">
@@ -88,9 +89,6 @@ function renderContacts() {
       </div>
       <div class="contact-name">${contact.name}</div>
     `;
-    
-    // TODO: 未来给 item 加上 onclick 事件，点击跳转到专属聊天页
-    // item.onclick = () => openChat(contact.id);
 
     listContainer.appendChild(item);
   });

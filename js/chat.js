@@ -3,24 +3,85 @@ let currentContact = null;
 let chatHistory = [];
 let activeApi = null;
 
-// 初始化：绑定回车键发送功能
+// ================= 初始化与事件监听 =================
 document.addEventListener('DOMContentLoaded', () => {
   const inputEl = document.getElementById('message-input');
   if (inputEl) {
+    // 1. 监听回车键发送消息
     inputEl.addEventListener('keypress', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault(); 
         sendMessage();
       }
     });
+
+    // 2. 监听打字：实现 ➕ 号和 发送键 的丝滑切换
+    inputEl.addEventListener('input', function() {
+      const hasText = this.value.trim().length > 0;
+      const plusBtn = document.getElementById('plus-btn');
+      const sendBtn = document.getElementById('send-btn');
+      
+      if (hasText) {
+        plusBtn.classList.add('hide');
+        sendBtn.classList.remove('hidden');
+      } else {
+        plusBtn.classList.remove('hide');
+        sendBtn.classList.add('hidden');
+      }
+    });
+
+    // 3. 监听焦点：只要键盘弹起准备打字，立马合上底部的九宫格抽屉
+    inputEl.addEventListener('focus', function() {
+      closeBottomDrawer();
+    });
   }
 });
 
+// ================= 底部抽屉与面板逻辑 =================
+
+// 切换抽屉状态（表情面板 或 ➕号面板）
+function toggleBottomDrawer(type) {
+  const drawer = document.getElementById('bottom-drawer');
+  const emojiPanel = document.getElementById('emoji-panel');
+  const plusPanel = document.getElementById('plus-panel');
+  
+  // 强行把手机软键盘收起来
+  document.getElementById('message-input').blur();
+
+  // 如果点的是已经打开的那个面板，就把它关上
+  if (drawer.classList.contains('open') && drawer.dataset.current === type) {
+    closeBottomDrawer();
+    return;
+  }
+
+  // 展开抽屉，并切换对应的面板显示
+  drawer.classList.add('open');
+  drawer.dataset.current = type;
+  
+  if (type === 'emoji') {
+    emojiPanel.style.display = 'block';
+    plusPanel.style.display = 'none';
+  } else if (type === 'plus') {
+    emojiPanel.style.display = 'none';
+    plusPanel.style.display = 'block';
+  }
+}
+
+// 关闭底部抽屉
+function closeBottomDrawer() {
+  const drawer = document.getElementById('bottom-drawer');
+  if (drawer) {
+    drawer.classList.remove('open');
+    drawer.dataset.current = '';
+  }
+}
+
+
 // ================= SPA 专属：打开微信与聊天室 =================
 
-// 1. 打开微信消息列表
+// 打开微信消息列表
 function openWechatList() {
-  openPage('page-wechat-list'); // 呼出微信列表图层
+  openPage('page-wechat-list'); 
   const listContainer = document.getElementById('wechat-list-container');
   const contacts = JSON.parse(localStorage.getItem('nekobako_contacts')) || [];
 
@@ -36,7 +97,7 @@ function openWechatList() {
     item.style.padding = '15px';
     item.style.color = '#333';
     
-    // 重点：点击时直接调用 JS 函数，把 ID 传过去，而不是跳网页！
+    // 点击时把角色 ID 传过去
     item.onclick = () => openChatRoom(contact.id); 
 
     let avatarHTML = contact.avatar 
@@ -51,17 +112,17 @@ function openWechatList() {
   });
 }
 
-// 2. 打开具体的聊天房间
+// 打开具体的聊天房间
 function openChatRoom(contactId) {
   const contacts = JSON.parse(localStorage.getItem('nekobako_contacts')) || [];
   currentContact = contacts.find(c => c.id === contactId);
 
   if (!currentContact) return;
 
-  // 设置标题
+  // 设置顶部名字
   document.getElementById('chat-title').innerText = currentContact.name;
 
-  // 检查 API 配置
+  // 检查 API
   activeApi = JSON.parse(localStorage.getItem('nekobako_active_api'));
   if (!activeApi) {
     alert('提示：您还没有配置大模型接口！请先去桌面“设置”中拉取模型并应用。');
@@ -72,13 +133,13 @@ function openChatRoom(contactId) {
   chatHistory = JSON.parse(localStorage.getItem(historyKey)) || [];
   renderHistory();
 
-  // 把聊天室图层推入屏幕
   openPage('page-chat'); 
 }
 
-// ================= UI 渲染与大模型通讯 =================
 
-// 将历史记录画到屏幕上
+// ================= UI 渲染部分 =================
+
+// 渲染全部历史记录
 function renderHistory() {
   const chatBox = document.getElementById('chat-box');
   chatBox.innerHTML = '';
@@ -122,7 +183,10 @@ function scrollToBottom() {
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// 发送消息给大模型
+
+// ================= 核心大模型通讯与重生成 =================
+
+// 发送正常消息
 async function sendMessage() {
   if (!activeApi) {
     alert('请先去桌面“设置”中应用一个预设模型！');
@@ -135,14 +199,56 @@ async function sendMessage() {
 
   const sendBtn = document.getElementById('send-btn');
 
+  // 立即显示用户发言
   appendMessage('user', text);
   inputEl.value = '';
+  
+  // 魔法细节：强行触发 input 事件，让发送键缩回去变回 ➕ 号
+  inputEl.dispatchEvent(new Event('input')); 
+  closeBottomDrawer();
+
   sendBtn.disabled = true;
-  sendBtn.innerText = '正在输入...';
+  sendBtn.innerText = '发送中...';
 
   chatHistory.push({ role: 'user', content: text });
   saveHistory();
 
+  await fetchAiReply();
+  
+  sendBtn.disabled = false;
+  sendBtn.innerText = '发送';
+  inputEl.focus();
+}
+
+// “重新生成”功能的终极魔法
+async function regenerateMessage() {
+  closeBottomDrawer(); // 收起抽屉
+
+  if (!activeApi) {
+    alert('请先去桌面“设置”中应用一个预设模型！');
+    return;
+  }
+
+  if (chatHistory.length === 0) return;
+
+  // 检查最后一条消息是不是 AI 发的
+  const lastMsg = chatHistory[chatHistory.length - 1];
+  if (lastMsg.role !== 'assistant') {
+    alert('提示：只有 AI 的最后一条回复才可以重新生成哦！');
+    return;
+  }
+
+  // 核心逻辑：抹除记忆里的最后一条 AI 回复，并重新渲染屏幕
+  chatHistory.pop();
+  saveHistory();
+  renderHistory();
+
+  // 再次呼叫大模型
+  await fetchAiReply();
+}
+
+// 提取出来的公共网络请求模块 (防止代码重复)
+async function fetchAiReply() {
   const baseRule = `你现在正在和用户进行微信私聊。请你必须严格遵守以下规则进行角色扮演：\n1. 沉浸式扮演：绝不能承认自己是AI或大语言模型，遇到不知道的事情请用符合人设的借口搪塞。\n2. 微信语境：回复要像真人发微信一样，口语化、接地气、简短有力，严禁长篇大论和复杂的排版格式。\n3. 你的具体角色设定如下：\n`;
   const systemPrompt = baseRule + currentContact.prompt;
 
@@ -164,7 +270,7 @@ async function sendMessage() {
       body: JSON.stringify({
         model: activeApi.model,
         messages: apiMessages,
-        temperature: 0.7 
+        temperature: 0.8 // 重新生成时，稍微调高一点温度(0.8)可以让每次重答更不一样
       })
     });
 
@@ -181,16 +287,18 @@ async function sendMessage() {
     saveHistory();
 
   } catch (error) {
-    alert("发送失败，请检查网络或 API 配置。\n详细错误：" + error.message);
-    chatHistory.pop(); 
-    saveHistory();
-  } finally {
-    sendBtn.disabled = false;
-    sendBtn.innerText = '发送';
-    inputEl.focus();
+    alert("请求失败，请检查网络或 API 配置。\n详细错误：" + error.message);
+    // 如果是正常发消息失败，需要把用户发的那条记录也弹出来，防止卡死
+    // 这里做了一个简单的防呆处理
+    if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
+      chatHistory.pop();
+      saveHistory();
+      renderHistory(); // 重新渲染，把发失败的消息拿掉
+    }
   }
 }
 
+// ================= 数据持久化 =================
 function saveHistory() {
   const historyKey = 'nekobako_chat_' + currentContact.id;
   localStorage.setItem(historyKey, JSON.stringify(chatHistory));

@@ -15,3 +15,21 @@ function updateTime() {
 
 updateTime();
 setInterval(updateTime, 1000);
+
+// ================= SPA 页面路由器 =================
+
+// 打开某个图层 (例如传入 'page-settings')
+function openPage(pageId) {
+  // 把目标图层推入屏幕
+  document.getElementById(pageId).classList.add('active');
+  // 把桌面缩小变暗
+  document.getElementById('page-home').classList.add('background-mode');
+}
+
+// 关闭某个图层（返回桌面）
+function closePage(pageId) {
+  // 把目标图层移出屏幕
+  document.getElementById(pageId).classList.remove('active');
+  // 恢复桌面正常状态
+  document.getElementById('page-home').classList.remove('background-mode');
+}

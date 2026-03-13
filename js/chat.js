@@ -220,7 +220,7 @@ async function sendMessage() {
   inputEl.focus();
 }
 
-// “重新生成”功能的终极魔法
+// “重新生成”功能的终极魔法 (升级版：支持连发批量撤回)
 async function regenerateMessage() {
   closeBottomDrawer(); // 收起抽屉
 
@@ -238,18 +238,26 @@ async function regenerateMessage() {
     return;
   }
 
-  // 核心逻辑：抹除记忆里的最后一条 AI 回复，并重新渲染屏幕
-  chatHistory.pop();
+  // 【核心修改点】：因为 AI 现在可能会连发好几条，所以我们要用 while 循环，
+  // 把记忆数组末尾属于 assistant（AI）的气泡全部删干净，直到碰见 user（你）发的话为止。
+  while (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'assistant') {
+    chatHistory.pop();
+  }
+  
   saveHistory();
-  renderHistory();
+  renderHistory(); // 刷新屏幕，刚刚 AI 连发的烂回复就全消失了
 
   // 再次呼叫大模型
   await fetchAiReply();
 }
 
+// 【新增】：用来模拟真人打字停顿的延迟函数
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // 提取出来的公共网络请求模块 (防止代码重复)
 async function fetchAiReply() {
-  const baseRule = `你现在正在和用户进行微信私聊。请你必须严格遵守以下规则进行角色扮演：\n1. 沉浸式扮演：绝不能承认自己是AI或大语言模型，遇到不知道的事情请用符合人设的借口搪塞。\n2. 微信语境：回复要像真人发微信一样，口语化、接地气、简短有力，严禁长篇大论和复杂的排版格式。\n3. 你的具体角色设定如下：\n`;
+  // 【核心修改点 1】：在系统提示词里加上 || 作为连发暗号的铁律
+  const baseRule = `你现在正在和用户进行微信私聊。请你必须严格遵守以下规则进行角色扮演：\n1. 沉浸式扮演：绝不能承认自己是AI或大语言模型，遇到不知道的事情请用符合人设的借口搪塞。\n2. 微信语境：回复要像真人发微信一样，口语化、接地气、简短有力，严禁长篇大论和复杂的排版格式。\n3. 连发模式：如果你觉得一句话说不完，需要分多条微信发送，请务必使用 || 作为分句符。例如：真的假的？||我不信。||你等我查一下！\n4. 你的具体角色设定如下：\n`;
   const systemPrompt = baseRule + currentContact.prompt;
 
   const apiMessages = [
@@ -270,7 +278,7 @@ async function fetchAiReply() {
       body: JSON.stringify({
         model: activeApi.model,
         messages: apiMessages,
-        temperature: 0.8 // 重新生成时，稍微调高一点温度(0.8)可以让每次重答更不一样
+        temperature: 0.8 
       })
     });
 
@@ -280,20 +288,33 @@ async function fetchAiReply() {
     }
 
     const data = await response.json();
-    const aiReply = data.choices[0].message.content;
+    // 拿到大模型的原始回复
+    const aiReplyRaw = data.choices[0].message.content;
 
-    appendMessage('assistant', aiReply);
-    chatHistory.push({ role: 'assistant', content: aiReply });
-    saveHistory();
+    // 【核心修改点 2】：用 || 切割回复，去掉两端多余空格，并过滤掉空字符串
+    const replyPieces = aiReplyRaw.split('||').map(p => p.trim()).filter(p => p.length > 0);
+
+    // 【核心修改点 3】：用循环把切开的句子一条一条发出来
+    for (let i = 0; i < replyPieces.length; i++) {
+      const piece = replyPieces[i];
+      
+      // 画在屏幕左侧，并存入本地记忆
+      appendMessage('assistant', piece);
+      chatHistory.push({ role: 'assistant', content: piece });
+      saveHistory();
+
+      // 如果这不是最后一句，就等个 1.5 秒再发下一句，制造真人打字的停顿感
+      if (i < replyPieces.length - 1) {
+        await sleep(1500); 
+      }
+    }
 
   } catch (error) {
     alert("请求失败，请检查网络或 API 配置。\n详细错误：" + error.message);
-    // 如果是正常发消息失败，需要把用户发的那条记录也弹出来，防止卡死
-    // 这里做了一个简单的防呆处理
     if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
       chatHistory.pop();
       saveHistory();
-      renderHistory(); // 重新渲染，把发失败的消息拿掉
+      renderHistory(); 
     }
   }
 }

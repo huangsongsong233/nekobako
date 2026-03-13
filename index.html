@@ -92,10 +92,26 @@
       </div>
       <div class="chat-input-area">
         <textarea class="chat-input" id="message-input" placeholder="发消息..." rows="1"></textarea>
-        <button class="chat-send-btn" id="send-btn" onclick="sendMessage()">发送</button>
+        <div class="chat-action-btn" id="emoji-btn" onclick="toggleBottomDrawer('emoji')">😊</div>
+        <div class="chat-action-container">
+          <div class="chat-action-btn plus-btn" id="plus-btn" onclick="toggleBottomDrawer('plus')">➕</div>
+          <button class="chat-send-btn hidden" id="send-btn" onclick="sendMessage()">发送</button>
+        </div>
       </div>
-    </div>
-  </div>
+      
+      <div class="bottom-drawer" id="bottom-drawer">
+        <div class="drawer-panel" id="emoji-panel" style="display: none;">
+          <p style="text-align:center; color:#888; padding-top:30px;">表情包功能开发中...</p>
+        </div>
+        <div class="drawer-panel" id="plus-panel" style="display: none;">
+          <div class="drawer-grid">
+            <div class="drawer-item" onclick="regenerateMessage()">
+              <div class="drawer-icon">🔄</div>
+              <div class="drawer-text">重新生成</div>
+            </div>
+            </div>
+        </div>
+      </div>
 
   <div class="page" id="page-contacts-list">
     <div class="settings-screen">

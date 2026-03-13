@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>聊天 - nekobako</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="wechat-screen">
+  <div class="wechat-header">
+    <a href="wechat_list.html" class="wechat-back">‹ 微信</a>
+    <div class="wechat-title" id="chat-title">加载中...</div>
+  </div>
+
+  <div class="chat-container" id="chat-box">
+    </div>
+
+  <div class="chat-input-area">
+    <textarea class="chat-input" id="message-input" placeholder="发消息..." rows="1"></textarea>
+    <button class="chat-send-btn" id="send-btn" onclick="sendMessage()">发送</button>
+  </div>
+</div>
+
+<script src="js/chat.js"></script>
+</body>
+</html>

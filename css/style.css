@@ -402,7 +402,7 @@ textarea.form-control {
 /* 用户的绿色气泡 */
 .message-row.user .chat-bubble { background-color: #95ec69; margin-right: 10px; } 
 
-/* ================= 微信底部输入框 ================= */
+/* ================= 微信底部输入框 (升级版) ================= */
 .chat-input-area { 
   background-color: #f7f7f7; 
   border-top: 1px solid #dcdcdc; 
@@ -411,6 +411,7 @@ textarea.form-control {
   align-items: flex-end; 
   flex-shrink: 0; 
   padding-bottom: max(10px, env(safe-area-inset-bottom)); 
+  z-index: 10;
 }
 
 .chat-input { 
@@ -424,22 +425,123 @@ textarea.form-control {
   overflow-y: auto; 
   outline: none; 
   resize: none; 
+  margin-right: 10px;
 }
 
+/* 底部图标通用样式 */
+.chat-action-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
+  color: #333;
+  cursor: pointer;
+  margin-bottom: 3px;
+  flex-shrink: 0;
+}
+
+#emoji-btn { margin-right: 10px; }
+
+/* 变形容器：必须是相对定位，为了让两个按钮重叠在一起 */
+.chat-action-container {
+  position: relative;
+  width: 60px; /* 预留给发送按钮的宽度 */
+  height: 38px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ➕号：旋转缩小消失的动画 */
+.plus-btn {
+  position: absolute;
+  right: 10px;
+  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.plus-btn.hide {
+  transform: rotate(90deg) scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 发送键：放大弹出的动画 */
 .chat-send-btn { 
+  position: absolute;
+  right: 0;
   background-color: #07c160; 
   color: white; 
   border: none; 
   border-radius: 4px; 
   padding: 8px 15px; 
-  margin-left: 10px; 
   font-size: 14px; 
   cursor: pointer; 
   height: 38px; 
   font-weight: 500; 
+  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  transform-origin: right center; /* 动画从右侧爆发 */
 }
 .chat-send-btn:active { background-color: #06ad56; }
 .chat-send-btn:disabled { background-color: #a6e5b9; cursor: not-allowed; }
+.chat-send-btn.hidden {
+  transform: scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ================= 底部魔法抽屉 ================= */
+.bottom-drawer {
+  height: 0;
+  background-color: #f7f7f7;
+  overflow: hidden;
+  transition: height 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  border-top: 1px solid transparent;
+  flex-shrink: 0;
+}
+
+/* 展开状态 */
+.bottom-drawer.open {
+  height: 250px;
+  border-top-color: #dcdcdc;
+}
+
+.drawer-panel {
+  padding: 20px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* 抽屉里的九宫格 */
+.drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px 10px;
+  justify-items: center;
+}
+
+.drawer-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.drawer-icon {
+  width: 60px;
+  height: 60px;
+  background-color: white;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 8px;
+}
+.drawer-icon:active { background-color: #eee; }
+.drawer-text { font-size: 12px; color: #888; }
 
 /* ================= SPA 单页面架构样式 ================= */
 .app-container {

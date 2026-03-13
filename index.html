@@ -4,94 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>nekobako</title>
-<style>
-  /* 全局去边距，防止出现滚动条 */
-  body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #000;
-  }
-
-  /* 主屏幕容器，铺满全屏 */
-  .home-screen {
-    width: 100vw;
-    height: 100vh;
-    background: url('https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=800&auto=format&fit=crop') no-repeat center center;
-    background-size: cover;
-    position: relative;
-    color: white;
-  }
-
-  /* 屏幕中央区域：时间与日期 */
-  .screen-center {
-    position: absolute;
-    top: 15%;
-    width: 100%;
-    text-align: center;
-  }
-
-  .time {
-    font-size: 80px;
-    font-weight: 200;
-    letter-spacing: 2px;
-    margin: 0;
-  }
-
-  .date {
-    font-size: 20px;
-    font-weight: 400;
-    margin-top: -10px;
-  }
-
-  /* 底部固定栏 (Dock) */
-  .dock {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 500px;
-    height: 80px;
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border-radius: 30px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 0 10px;
-    box-sizing: border-box;
-  }
-
-  /* 图标样式 */
-  .icon {
-    width: 55px;
-    height: 55px;
-    border-radius: 14px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 30px;
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-
-  /* 点击时的缩放动画 */
-  .icon:active {
-    transform: scale(0.9);
-  }
-
-  /* 图标背景色 */
-  .icon-phone { background-color: #4cd964; }
-  .icon-contacts { background-color: #8e8e93; }
-  .icon-messages { background-color: #34c759; }
-  .icon-settings { background-color: #c7c7cc; }
-
-</style>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -105,34 +18,13 @@
     <div class="icon icon-phone" title="电话">📞</div>
     <div class="icon icon-contacts" title="联系人">👤</div>
     <div class="icon icon-messages" title="信息">💬</div>
-    <div class="icon icon-settings" title="设置">⚙️</div>
+    
+    <a href="settings.html" style="text-decoration: none;">
+      <div class="icon icon-settings" title="设置">⚙️</div>
+    </a>
   </div>
-
 </div>
 
-<script>
-  function updateTime() {
-    const now = new Date();
-    
-    // 格式化时间，保持两位数
-    let hours = now.getHours().toString().padStart(2, '0');
-    let minutes = now.getMinutes().toString().padStart(2, '0');
-    document.getElementById('clock').innerText = `${hours}:${minutes}`;
-
-    // 格式化日期和星期
-    const month = now.getMonth() + 1;
-    const day = now.getDate();
-    const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-    const weekday = weekdays[now.getDay()];
-    
-    document.getElementById('date').innerText = `${month}月${day}日 ${weekday}`;
-  }
-
-  // 初始化时间并设置定时器每秒刷新
-  updateTime();
-  setInterval(updateTime, 1000);
-</script>
-
+<script src="js/main.js"></script>
 </body>
-
 </html>

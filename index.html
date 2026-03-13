@@ -10,7 +10,7 @@
 
 <div class="app-container">
 
-  <div class="page" id="page-home">
+  <div class="page" id="page-home" style="transform: translateX(0); z-index: 1;">
     <div class="home-screen">
       <div class="screen-center">
         <div class="time" id="clock">00:00</div>
@@ -18,17 +18,19 @@
       </div>
 
       <div class="desktop-apps">
-        <a href="wechat_list.html" class="app-icon-wrapper">
+        <div class="app-icon-wrapper" onclick="openWechatList()">
           <div class="app-icon wechat-icon">💬</div>
           <div class="app-name">微信</div>
-        </a>
+        </div>
       </div>
 
       <div class="dock">
         <div class="icon icon-phone" title="电话">📞</div>
+        
         <a href="contacts.html" style="text-decoration: none;">
           <div class="icon icon-contacts" title="联系人">👤</div>
         </a>
+        
         <div class="icon icon-messages" title="信息">💬</div>
         
         <div class="icon icon-settings" title="设置" onclick="openPage('page-settings')">⚙️</div>
@@ -74,9 +76,36 @@
     </div>
   </div>
 
+  <div class="page" id="page-wechat-list">
+    <div class="wechat-screen">
+      <div class="wechat-header">
+        <a href="javascript:void(0)" class="wechat-back" onclick="closePage('page-wechat-list')">‹ 桌面</a>
+        <div class="wechat-title">微信</div>
+      </div>
+      <div class="contact-list" id="wechat-list-container" style="background: white;">
+        </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-chat">
+    <div class="wechat-screen">
+      <div class="wechat-header">
+        <a href="javascript:void(0)" class="wechat-back" onclick="closePage('page-chat')">‹ 微信</a>
+        <div class="wechat-title" id="chat-title">加载中...</div>
+      </div>
+      <div class="chat-container" id="chat-box">
+        </div>
+      <div class="chat-input-area">
+        <textarea class="chat-input" id="message-input" placeholder="发消息..." rows="1"></textarea>
+        <button class="chat-send-btn" id="send-btn" onclick="sendMessage()">发送</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script src="js/main.js"></script>
 <script src="js/settings.js"></script>
+<script src="js/chat.js"></script>
 </body>
 </html>

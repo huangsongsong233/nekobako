@@ -8,35 +8,75 @@
 </head>
 <body>
 
-<div class="home-screen">
-  <div class="screen-center">
-    <div class="time" id="clock">00:00</div>
-    <div class="date" id="date">1月1日 星期一</div>
+<div class="app-container">
+
+  <div class="page" id="page-home">
+    <div class="home-screen">
+      <div class="screen-center">
+        <div class="time" id="clock">00:00</div>
+        <div class="date" id="date">1月1日 星期一</div>
+      </div>
+
+      <div class="desktop-apps">
+        <a href="wechat_list.html" class="app-icon-wrapper">
+          <div class="app-icon wechat-icon">💬</div>
+          <div class="app-name">微信</div>
+        </a>
+      </div>
+
+      <div class="dock">
+        <div class="icon icon-phone" title="电话">📞</div>
+        <a href="contacts.html" style="text-decoration: none;">
+          <div class="icon icon-contacts" title="联系人">👤</div>
+        </a>
+        <div class="icon icon-messages" title="信息">💬</div>
+        
+        <div class="icon icon-settings" title="设置" onclick="openPage('page-settings')">⚙️</div>
+      </div>
+    </div>
   </div>
 
-  <div class="desktop-apps">
-    <a href="wechat_list.html" class="app-icon-wrapper">
-      <div class="app-icon wechat-icon">💬</div>
-      <div class="app-name">微信</div>
-    </a>
+  <div class="page" id="page-settings">
+    <div class="settings-screen">
+      <div class="header">
+        <a href="javascript:void(0)" class="back-btn" onclick="closePage('page-settings')">‹ 返回桌面</a>
+        <div class="settings-title">大模型设置</div>
+      </div>
+
+      <div class="form-group">
+        <label>预设名称</label>
+        <input type="text" id="preset-name" placeholder="例如：DeepSeek 接口" value="我的默认配置">
+      </div>
+
+      <div class="form-group">
+        <label>Base URL (以 v1 结尾)</label>
+        <input type="text" id="base-url" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
+        
+        <label style="margin-top: 15px;">API Key</label>
+        <input type="password" id="api-key" placeholder="sk-xxxxxxxxxxxxxxxxxxx">
+      </div>
+
+      <button class="btn btn-primary" id="fetch-btn" onclick="fetchModels()">拉取可用模型</button>
+      
+      <div class="form-group">
+        <label>选择模型</label>
+        <select id="model-select">
+          <option value="">请先拉取模型</option>
+        </select>
+      </div>
+
+      <button class="btn btn-success" onclick="savePreset()">保存此预设</button>
+
+      <div class="preset-list">
+        <h3 style="font-size: 16px; margin-bottom: 15px; color: #fff;">已保存的预设</h3>
+        <div id="preset-list-container"></div>
+      </div>
+    </div>
   </div>
-  
-  <div class="dock">
-    <div class="icon icon-phone" title="电话">📞</div>
-    
-    <a href="contacts.html" style="text-decoration: none;">
-      <div class="icon icon-contacts" title="联系人">👤</div>
-    </a>
-    
-    <div class="icon icon-messages" title="信息">💬</div>
-    
-    <a href="settings.html" style="text-decoration: none;">
-      <div class="icon icon-settings" title="设置">⚙️</div>
-    </a>
-  </div>
+
 </div>
 
 <script src="js/main.js"></script>
+<script src="js/settings.js"></script>
 </body>
 </html>
-

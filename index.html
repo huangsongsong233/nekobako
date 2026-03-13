@@ -26,11 +26,8 @@
 
       <div class="dock">
         <div class="icon icon-phone" title="电话">📞</div>
-        
         <div class="icon icon-contacts" title="联系人" onclick="openContactsPage()">👤</div>
-        
         <div class="icon icon-messages" title="信息">💬</div>
-        
         <div class="icon icon-settings" title="设置" onclick="openPage('page-settings')">⚙️</div>
       </div>
     </div>
@@ -81,7 +78,7 @@
         <div class="wechat-title">微信</div>
       </div>
       <div class="contact-list" id="wechat-list-container" style="background: white;">
-        </div>
+      </div>
     </div>
   </div>
 
@@ -92,7 +89,7 @@
         <div class="wechat-title" id="chat-title">加载中...</div>
       </div>
       <div class="chat-container" id="chat-box">
-        </div>
+      </div>
       <div class="chat-input-area">
         <textarea class="chat-input" id="message-input" placeholder="发消息..." rows="1"></textarea>
         <button class="chat-send-btn" id="send-btn" onclick="sendMessage()">发送</button>
@@ -105,10 +102,10 @@
       <div class="nav-header">
         <a href="javascript:void(0)" class="nav-btn" onclick="closePage('page-contacts-list')">‹ 返回桌面</a>
         <div class="nav-title">联系人</div>
-        <a href="javascript:void(0)" class="nav-btn" style="font-size: 24px;" onclick="openPage('page-add-contact')">+</a>
+        <a href="javascript:void(0)" class="nav-btn" style="font-size: 24px;" onclick="openNewContactPage()">+</a>
       </div>
       <div class="contact-list" id="contact-list-container">
-        </div>
+      </div>
     </div>
   </div>
 
@@ -116,7 +113,7 @@
     <div class="settings-screen">
       <div class="nav-header">
         <a href="javascript:void(0)" class="nav-btn" onclick="closePage('page-add-contact')">取消</a>
-        <div class="nav-title">新建联系人</div>
+        <div class="nav-title" id="contact-page-title">新建联系人</div>
         <button class="nav-btn" onclick="saveContact()" style="font-weight: 600;">完成</button>
       </div>
 
@@ -130,10 +127,12 @@
 
       <div class="form-group" style="padding: 0; background: transparent;">
         <div style="background-color: #2c2c2e; border-radius: 10px; padding: 5px 15px; margin-bottom: 20px;">
-          <input type="text" id="contact-name" placeholder="姓名 (例如: 贝阿朵莉切)" style="width: 100%; font-size: 18px; padding: 10px 0; border: none; background: transparent; color: white; outline: none;">
+          <input type="text" id="contact-name" placeholder="姓名" style="width: 100%; font-size: 18px; padding: 10px 0; border: none; background: transparent; color: white; outline: none;">
         </div>
         <label style="color: #8e8e93; font-size: 14px; margin-bottom: 8px; display: block; padding-left: 5px;">角色设定 (System Prompt)</label>
-        <textarea class="form-control" id="contact-prompt" placeholder="例如: 你是活了千年的黄金魔女，说话风格傲慢但又带着一丝顽皮……"></textarea>
+        <textarea class="form-control" id="contact-prompt" placeholder="例如: 设定你的专属角色……"></textarea>
+        
+        <button id="delete-contact-btn" onclick="deleteContact()" style="display: none; width: 100%; background-color: #ff3b30; color: white; border: none; padding: 15px; border-radius: 10px; font-size: 16px; margin-top: 20px; font-weight: 600;">删除该联系人</button>
       </div>
     </div>
   </div>

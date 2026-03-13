@@ -588,3 +588,28 @@ textarea.form-control {
   transform: scale(0.95);
   opacity: 0.5;
 }
+
+/* ================= 正在输入(呼吸灯)动画 ================= */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 2px;
+}
+.typing-indicator .dot {
+  width: 6px;
+  height: 6px;
+  background-color: #888;
+  border-radius: 50%;
+  margin: 0 3px;
+  /* 绑定关键帧动画，1.4秒一个循环，无限重复 */
+  animation: typing-bounce 1.4s infinite ease-in-out both;
+}
+/* 给第一和第二个点加上延迟，制造“此起彼伏”的海浪错觉 */
+.typing-indicator .dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator .dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing-bounce {
+  0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}

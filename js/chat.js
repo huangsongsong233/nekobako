@@ -64,7 +64,8 @@ function appendMessage(role, text) {
 
   // 处理头像
   let avatarHtml = '';
-  if (role === 'ai') {
+  // 重点修复这里：只要身份不是 'user'，就全都使用当前联系人（AI）的头像
+  if (role !== 'user') { 
     if (currentContact.avatar) {
       avatarHtml = `<div class="chat-avatar"><img src="${currentContact.avatar}"></div>`;
     } else {

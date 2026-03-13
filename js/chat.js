@@ -254,9 +254,40 @@ async function regenerateMessage() {
 // 【新增】：用来模拟真人打字停顿的延迟函数
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// 提取出来的公共网络请求模块 (防止代码重复)
+// ================= 幽灵气泡：正在输入 =================
+function showTyping() {
+  const chatBox = document.getElementById('chat-box');
+  if (document.getElementById('typing-bubble')) return; // 防重复
+
+  const row = document.createElement('div');
+  row.className = 'message-row ai';
+  row.id = 'typing-bubble'; // 专属身份证，方便等下精准销毁
+
+  let avatarHtml = currentContact.avatar 
+    ? `<div class="chat-avatar"><img src="${currentContact.avatar}"></div>`
+    : `<div class="chat-avatar">${currentContact.name.charAt(0)}</div>`;
+
+  const bubbleHtml = `
+    <div class="chat-bubble" style="min-width: 40px; min-height: 24px; display: flex; align-items: center;">
+      <div class="typing-indicator">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>`;
+
+  row.innerHTML = avatarHtml + bubbleHtml;
+  chatBox.appendChild(row);
+  scrollToBottom();
+}
+
+function removeTyping() {
+  const typingBubble = document.getElementById('typing-bubble');
+  if (typingBubble) typingBubble.remove();
+}
+
+// ================= 公共网络请求模块 =================
 async function fetchAiReply() {
-  // 【核心修改点 1】：在系统提示词里加上 || 作为连发暗号的铁律
   const baseRule = `你现在正在和用户进行微信私聊。请你必须严格遵守以下规则进行角色扮演：\n1. 沉浸式扮演：绝不能承认自己是AI或大语言模型，遇到不知道的事情请用符合人设的借口搪塞。\n2. 微信语境：回复要像真人发微信一样，口语化、接地气、简短有力，严禁长篇大论和复杂的排版格式。\n3. 连发模式：如果你觉得一句话说不完，需要分多条微信发送，请务必使用 || 作为分句符。例如：真的假的？||我不信。||你等我查一下！\n4. 你的具体角色设定如下：\n`;
   const systemPrompt = baseRule + currentContact.prompt;
 
@@ -264,6 +295,9 @@ async function fetchAiReply() {
     { role: 'system', content: systemPrompt },
     ...chatHistory 
   ];
+
+  // 【核心修改 1】：刚准备发请求，立刻召唤幽灵气泡！
+  showTyping();
 
   try {
     const baseUrl = activeApi.baseUrl.replace(/\/+$/, '');
@@ -288,29 +322,29 @@ async function fetchAiReply() {
     }
 
     const data = await response.json();
-    // 拿到大模型的原始回复
     const aiReplyRaw = data.choices[0].message.content;
-
-    // 【核心修改点 2】：用 || 切割回复，去掉两端多余空格，并过滤掉空字符串
     const replyPieces = aiReplyRaw.split('||').map(p => p.trim()).filter(p => p.length > 0);
 
-    // 【核心修改点 3】：用循环把切开的句子一条一条发出来
+    // 【核心修改 2】：数据拿到手了，过河拆桥，瞬间销毁幽灵气泡！
+    removeTyping();
+
+    // 开始模拟真人连发打字
     for (let i = 0; i < replyPieces.length; i++) {
       const piece = replyPieces[i];
-      
-      // 画在屏幕左侧，并存入本地记忆
       appendMessage('assistant', piece);
       chatHistory.push({ role: 'assistant', content: piece });
       saveHistory();
 
-      // 如果这不是最后一句，就等个 1.5 秒再发下一句，制造真人打字的停顿感
       if (i < replyPieces.length - 1) {
         await sleep(1500); 
       }
     }
 
   } catch (error) {
+    // 【核心修改 3】：就算网断了、报错了，也得把闪烁的气泡删掉，不能让它一直卡在那里
+    removeTyping();
     alert("请求失败，请检查网络或 API 配置。\n详细错误：" + error.message);
+    
     if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
       chatHistory.pop();
       saveHistory();
